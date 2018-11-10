@@ -9,12 +9,11 @@ import json
 import pandas as pd
 import numpy as np
 from api_key import my_key
+from itertools import permutations
+from model import cost_func, create_model, get_sample, test_pulp
+
 
 endpoint = "https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&"
-#origins = input("Where from?:").replace(" ","+")
-#destinations = input("Where to?:").replace(" ","+")
-#origins = "1902+Rosalie+Ridge+Dr+Huntsville+AL"
-#destinations = "143+Tuscany+Lane+Vine+Grove+KY|704+Desoto+Rd+Huntsville+AL"
 
 #Load in all the locations
 df = pd.read_csv("Locations.csv")
@@ -27,35 +26,43 @@ for j in range(len(df)):
 
 #Create a dictionary to store all the transportation costs for every (origin,destination)
 #transportation_costs = dict()
-for i in range(len(df)):
-    origins = df.iloc[i,1]
-    destinations = "|".join(list(df.iloc[:i,1])+list(df.iloc[i+1:,1]))
-    nav_req = "origins={}&destinations={}&key={}".format(origins, destinations, my_key)
-    request = endpoint + nav_req
-    response = urllib.request.urlopen(request).read()
-    data = json.loads(response)
-    
-    transportation_costs[df.iloc[i,0]] = dict()
-    distances = data['rows'][0]['elements']
-    for j in range(len(distances)):
-        distance = distances[j]['distance']['text']
-        duration = distances[j]['duration']['text']
-        length, l_unit = distance.split()
-        length = float(length)
-        time, t_unit = duration.split()
-        time = float(time)
-        transportation_costs[df.iloc[i,0]][df.iloc[j,0]] = time
-
-#matrix = []        
-#for k in transportation_costs.keys():
-#    v = list(transportation_costs[k].values())
-#    row = [0]*(len(df)-len(v))+v
-#    matrix.append(row)
+#for i in range(len(df)):
+#    origins = df.iloc[i,1]
+#    destinations = "|".join(list(df.iloc[:i,1])+list(df.iloc[i+1:,1]))
+#    nav_req = "origins={}&destinations={}&key={}".format(origins, destinations, my_key)
+#    request = endpoint + nav_req
+#    response = urllib.request.urlopen(request).read()
+#    data = json.loads(response)
 #    
-#matrix = np.array(matrix)
-#matrix = matrix.T
-        
+#    transportation_costs[df.iloc[i,0]] = dict()
+#    distances = data['rows'][0]['elements']
+#    for j in range(len(distances)):
+#        distance = distances[j]['distance']['text']
+#        duration = distances[j]['duration']['text']
+#        length, l_unit = distance.split()
+#        length = float(length)
+#        time, t_unit = duration.split()
+#        time = float(time)
+#        transportation_costs[df.iloc[i,0]][df.iloc[j+1,0]] = time
+#
+#places = list(df.iloc[1:,0])
+#idx = list(range(1,len(places)+1))
+#perm = permutations(idx,5)
+#perm = np.array(list(perm))
+#np.random.shuffle(perm)
 
-
-
-        
+z=8000
+while True:
+    if z == len(perm)/10 -1:
+        break
+    sample = get_sample(perm, z)
+    costs = cost_func(transportation_costs, places, sample)
+    
+    if test_pulp(costs):
+        create_model(places, costs, z)
+        print(z)
+        break
+    else:
+        print(z, "no such luck")
+            
+    z+=1
