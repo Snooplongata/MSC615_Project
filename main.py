@@ -55,7 +55,7 @@ z=8000
 while True:
     if z == len(perm)/10 -1:
         break
-    sample = get_sample(perm, z)
+    sample = get_sample(perm)
     costs = cost_func(transportation_costs, places, sample)
     
     if test_pulp(costs):

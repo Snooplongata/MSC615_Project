@@ -11,18 +11,37 @@ import openpyxl
 from openpyxl import Workbook
 from openpyxl.styles import PatternFill, Border, Side
 
-def get_sample(arr, n_iter=None, sample_size = 10, fast = True):
+def get_sample(arr, n_routes = 10, n_stops = 5):
     """
     
     """
-    n = len(arr)
-    if fast:
-        start_idx = (n_iter * sample_size) % n
-        if start_idx + sample_size >= n:
-            np.random.shuffle(arr)
-        return arr[start_idx:start_idx+sample_size]
-    else:
-        return np.random.choice(arr, sample_size, replace = False)
+    whatsLeft = list(range(1,31))
+    res = []
+    i = 0
+    while True:
+        if len(res) == n_routes:
+            break
+        if not whatsLeft:
+            res.append(arr[i])
+            i += 1
+        else:
+            res.append(arr[i])
+            for j in arr[i]:
+                if j in whatsLeft:
+                    whatsLeft.remove(j)
+
+            target = min(whatsLeft)
+            indx = list(arr[:,0]).index(target)
+            
+            if len(whatsLeft) <= n_stops:
+                hold = arr[:]
+                for k,ele in enumerate(whatsLeft):
+                    hold = hold[hold[:,k] == ele]
+                res.append(hold[0])
+
+            i = indx
+
+    return res
 
 def cost_func(tc, places, sample):       
     costs = []
@@ -135,7 +154,7 @@ def test_pulp(sample):
     
     #Add constraints
     constraint1 = sum(selection)
-    prob += (constraint1 == 3)
+    prob += (constraint1 == 6)
     contraint2 = sum(bip[0] * selection)
     prob += (contraint2 >= 1)
     contraint3 = sum(bip[1] * selection)
@@ -155,7 +174,7 @@ def test_pulp(sample):
     contraint10 = sum(bip[8] * selection)
     prob += (contraint10 >= 1)
     constraint11 = sum(bip[9] * selection)
-    prob += (constraint11 == 3)
+    prob += (constraint11 >= 1)
     contraint12 = sum(bip[10] * selection)
     prob += (contraint12 >= 1)
     contraint13 = sum(bip[11] * selection)
@@ -175,7 +194,7 @@ def test_pulp(sample):
     contraint20 = sum(bip[18] * selection)
     prob += (contraint20 >= 1)
     constraint21 = sum(bip[19] * selection)
-    prob += (constraint21 == 3)
+    prob += (constraint21 >= 1)
     contraint22 = sum(bip[20] * selection)
     prob += (contraint22 >= 1)
     contraint23 = sum(bip[21] * selection)
