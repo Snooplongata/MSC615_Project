@@ -11,6 +11,42 @@ import openpyxl
 from openpyxl import Workbook
 from openpyxl.styles import PatternFill, Border, Side
 
+def create_poss(sample):
+    whatsLeft = list(range(1,31))
+    sample2 = sample[:]
+    res = []
+    i = 0
+    while True:
+        if len(res) == 10:
+            break
+
+        target = min(sample[:,0])
+        if len(res) >= 6:
+            target = max(sample[:,0])
+        indx = list(sample[:,0]).index(target)
+        if len(res) < 1:
+            res.append(sample[indx])
+        else:
+            while True:
+                if not any(res[-1][1:] == sample[indx,1:]):
+                    res.append(sample[indx])
+                    break
+                else:
+                    indx += 1
+        for j in sample[indx,1:]:
+            if j in whatsLeft:
+                whatsLeft.remove(j)
+
+        sample = sample[sample[:,0] != target]
+        for k in res[-1][1:]:
+            sample = sample[(sample[:,1] != k)*(sample[:,2] != k)*(sample[:,3] != k)*(sample[:,4] != k)*(sample[:,5] != k)]
+        
+        if len(sample) < 1:
+            sample = sample2[:]
+    
+    res = np.array(res)
+    return res
+
 def get_sample(arr, n_iter=None, sample_size = 10, fast = True):
     """
     
@@ -119,9 +155,15 @@ def test_pulp(sample):
     route8 = pulp.LpVariable('route8', lowBound=0, upBound=1, cat='Integer')
     route9 = pulp.LpVariable('route9', lowBound=0, upBound=1, cat='Integer')
     route10 = pulp.LpVariable('route10', lowBound=0, upBound=1, cat='Integer')
+#    route11 = pulp.LpVariable('route11', lowBound=0, upBound=1, cat='Integer')
+#    route12 = pulp.LpVariable('route12', lowBound=0, upBound=1, cat='Integer')
+#    route13 = pulp.LpVariable('route13', lowBound=0, upBound=1, cat='Integer')
+#    route14 = pulp.LpVariable('route14', lowBound=0, upBound=1, cat='Integer')
+#    route15 = pulp.LpVariable('route15', lowBound=0, upBound=1, cat='Integer')
     
     selection = np.array([route1,route2,route3,route4,route5,route6,route7,
-                          route8,route9,route10])
+                          route8,route9,route10])#,route11,route12,route13,route14,
+                          #route15])
     costs = sample[:,0]
     total_cost = sum(costs*selection)
     
@@ -135,7 +177,7 @@ def test_pulp(sample):
     
     #Add constraints
     constraint1 = sum(selection)
-    prob += (constraint1 == 3)
+    prob += (constraint1 == 6)
     contraint2 = sum(bip[0] * selection)
     prob += (contraint2 >= 1)
     contraint3 = sum(bip[1] * selection)
@@ -155,7 +197,7 @@ def test_pulp(sample):
     contraint10 = sum(bip[8] * selection)
     prob += (contraint10 >= 1)
     constraint11 = sum(bip[9] * selection)
-    prob += (constraint11 == 3)
+    prob += (constraint11 >= 1)
     contraint12 = sum(bip[10] * selection)
     prob += (contraint12 >= 1)
     contraint13 = sum(bip[11] * selection)
@@ -175,7 +217,7 @@ def test_pulp(sample):
     contraint20 = sum(bip[18] * selection)
     prob += (contraint20 >= 1)
     constraint21 = sum(bip[19] * selection)
-    prob += (constraint21 == 3)
+    prob += (constraint21 >= 1)
     contraint22 = sum(bip[20] * selection)
     prob += (contraint22 >= 1)
     contraint23 = sum(bip[21] * selection)
@@ -212,4 +254,4 @@ def test_pulp(sample):
     else:
         return False
     
-#test_pulp(sample)
+#test_pulp(df2)

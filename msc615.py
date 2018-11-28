@@ -2,14 +2,14 @@ import numpy as np
 import pulp
 
 
-#matrix = []        
-#for k in transportation_costs.keys():
-#    v = list(transportation_costs[k].values())
-#    row = [0]*(len(df)-len(v))+v
-#    matrix.append(row)
-#    
-#matrix = np.array(matrix)
-#matrix = matrix.T
+matrix = []      
+for k in transportation_costs.keys():
+    v = list(transportation_costs[k].values())
+    matrix.append(v)
+    
+matrix = np.array(matrix)
+matrix = np.vstack((matrix[6,:],matrix[:6,:],matrix[7:,:]))
+matrix = np.vstack((matrix[:22,:],matrix[23,:],matrix[22,:],matrix[24:,:]))
 
 def pulp_example_code():
     # create the LP object, set up as a maximization problem
@@ -116,17 +116,17 @@ def test_pulp_hw(sample):
     for i,var in enumerate(selection):
         print('{} was chosen: {}'.format(var.name, bool(var.value())))
     
-test_pulp_hw(hw)
+#test_pulp_hw(hw)
 
-import pickle
-
-data = {'permutations': perm, 'tc': transportation_costs}
-
-with open('data.pickle', 'wb') as f:
-    # Pickle the 'data' dictionary using the highest protocol available.
-    pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
-    
-with open('data.pickle', 'rb') as f:
-    # The protocol version used is detected automatically, so we do not
-    # have to specify it.
-    data = pickle.load(f)
+#import pickle
+#
+#data = {'permutations': perm, 'tc': transportation_costs}
+#
+#with open('data.pickle', 'wb') as f:
+#    # Pickle the 'data' dictionary using the highest protocol available.
+#    pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
+#    
+#with open('data.pickle', 'rb') as f:
+#    # The protocol version used is detected automatically, so we do not
+#    # have to specify it.
+#    data = pickle.load(f)
