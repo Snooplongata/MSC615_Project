@@ -11,6 +11,7 @@ import openpyxl
 from openpyxl import Workbook
 from openpyxl.styles import PatternFill, Border, Side
 
+
 def create_poss(sample):
     whatsLeft = list(range(1,31))
     sample2 = sample[:]
@@ -47,18 +48,37 @@ def create_poss(sample):
     res = np.array(res)
     return res
 
-def get_sample(arr, n_iter=None, sample_size = 10, fast = True):
+def get_sample(arr, n_routes = 10, n_stops = 5):
     """
     
     """
-    n = len(arr)
-    if fast:
-        start_idx = (n_iter * sample_size) % n
-        if start_idx + sample_size >= n:
-            np.random.shuffle(arr)
-        return arr[start_idx:start_idx+sample_size]
-    else:
-        return np.random.choice(arr, sample_size, replace = False)
+    whatsLeft = list(range(1,31))
+    res = []
+    i = 0
+    while True:
+        if len(res) == n_routes:
+            break
+        if not whatsLeft:
+            res.append(arr[i])
+            i += 1
+        else:
+            res.append(arr[i])
+            for j in arr[i]:
+                if j in whatsLeft:
+                    whatsLeft.remove(j)
+
+            target = min(whatsLeft)
+            indx = list(arr[:,0]).index(target)
+            
+            if len(whatsLeft) <= n_stops:
+                hold = arr[:]
+                for k,ele in enumerate(whatsLeft):
+                    hold = hold[hold[:,k] == ele]
+                res.append(hold[0])
+
+            i = indx
+
+    return res
 
 def cost_func(tc, places, sample):       
     costs = []
